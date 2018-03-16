@@ -1,3 +1,15 @@
+/*
+    Title : Project classification of Danger Areas using Past inputs
+    Uses: Can be used for classification of earthquakes, volcanic eruptions, floods etc.
+    or natural disasters
+    or criminal cases based on locality
+
+    Design:
+    Simple Neural Network with 33 inputs and one output unit & binary sigmoidal activation at output
+    All input nodes represent coefficients of classification polynomial used
+    and trained according to the user input through mouse
+*/
+
 let n=11;   // highest degree used in classification polynomial
 let alpha=0.3;  // learning rate
 
@@ -5,33 +17,41 @@ let points=[];
 let theta=[];
 let isRed=true;
 
+// It is the entry point of the program
 function setup(){
     createCanvas(windowWidth,windowHeight);
+    // initialise the neural network
     initTheta();
 }
 
+// This function run every 10milliseconds in browser window
 function draw(){
     background(250);
     drawGrid();
     drawPoints();
+    // train the neural network
     gradientDescent();
+    // draw the classification curve
     drawCurve();
-
 }
 
+// to draw the grid
 function drawGrid(){
     push();
     stroke(0);
-    let delta=20;
+    let delta=width/11;
     for(let y=0; y<=height; y+=delta){
         line(0,y,width,y);
     }
     for(let x=0; x<=width; x+=delta){
         line(x,0,x,height);
     }
+
     pop();
 }
 
+// when user clicks the mouse
+// add a new point to the data to train neural network
 function mousePressed(){
     let colN;
     if(isRed){
@@ -45,12 +65,14 @@ function mousePressed(){
     timer=0;
 }
 
+// to draw the points
 function drawPoints(){
     for(let point of points){
         point.draw();
     }
 }
 
+// Point Class
 class Point{
 
     constructor(x,y,colorN){
@@ -76,6 +98,7 @@ class Point{
     }
 }
 
+// to initialise the weights of neural network
 function initTheta(){
     theta=[];
     theta.push({
@@ -111,15 +134,23 @@ function initTheta(){
 }
 
 // input of type{x: , y: }
+// to find the expected output using current weights of neural network
 function value(input){
     let res=0;
     for(let t of theta){
         res+=(t.coeff*pow(input.x,t.powx)*pow(input.y,t.powy));
     }
-    res=(1/(1+Math.exp(-res)));
+    res=activation(res);
     return res;
 }
 
+// activation function used at output node ie binary sigmoid
+function activation(inp){
+    return 1/(1+Math.exp(-inp));
+}
+
+// To train the neural network
+// To run gradientDescent on coefficients of classification curve based on input data
 function gradientDescent(){
     let error=0;
     for(let point of points){
@@ -131,6 +162,8 @@ function gradientDescent(){
     }
 }
 
+
+// To draw the classification curve
 function drawCurve(){
     let posx, posy, res;
     for(let i=0; i<1; i+=0.01){
